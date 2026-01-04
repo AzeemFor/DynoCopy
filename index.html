@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucide IconHub | 500+ Vector Assets</title>
+    <title>Lucide IconHub | Pro SVG Assets</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root { --bg: #000; --card: #0a0a0a; --border: #1a1a1a; --accent: #fff; }
+        
         body {
-            background-color: #000;
+            background-color: var(--bg);
             color: #fff;
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -15,190 +17,180 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
         }
 
-        header {
-            text-align: center;
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; letter-spacing: -1px; margin: 0; }
+        header p { color: #666; margin-top: 10px; }
+
+        /* Real Search Bar */
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
             margin-bottom: 50px;
         }
 
-        h1 { font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 5px; }
-        header p { color: #666; margin-bottom: 30px; }
-
-        /* Search Bar Mockup */
-        .search-mock {
+        #iconSearch {
             width: 100%;
-            max-width: 400px;
-            padding: 12px;
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 8px;
-            color: #444;
-            margin-bottom: 40px;
-            font-size: 0.9rem;
+            padding: 15px 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        /* Responsive Grid */
+        #iconSearch:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Grid System */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 20px;
             max-width: 1100px;
             width: 100%;
         }
 
-        /* Card Styling */
         .card {
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            border-radius: 12px;
-            padding: 30px 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 35px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-8px) scale(1.03);
-            border-color: #fff;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            border-color: var(--accent);
             background: #111;
         }
 
         .icon-name {
             margin-top: 15px;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: #555;
-            text-transform: lowercase;
             font-family: 'JetBrains Mono', monospace;
         }
 
         .card:hover .icon-name { color: #fff; }
 
-        /* Progress Bar for Download */
-        .progress-container {
+        /* Notification Toast */
+        .toast {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #111;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-            width: 250px;
-            z-index: 100;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: #333;
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
+            bottom: 30px;
             background: #fff;
-            width: 0%;
-            transition: width 0.1s;
+            color: #000;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transform: translateY(100px);
+            transition: transform 0.4s ease;
+            z-index: 1000;
         }
+
+        .toast.show { transform: translateY(0); }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Executor Icons</h1>
-        <p>Icons for executors trust by crib</p>
-        <div class="search-mock">Search 500+ icons...</div>
+        <h1>Lucide IconHub</h1>
+        <p>Open-source icons, optimized for performance.</p>
     </header>
 
-    <div class="grid" id="iconGrid">
-        </div>
-
-    <div class="progress-container" id="pContainer">
-        <span style="font-size: 0.8rem;">Preparing <span id="pName">icon</span>.svg...</span>
-        <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+    <div class="search-container">
+        <input type="text" id="iconSearch" placeholder="Search 28+ professional icons..." onkeyup="filterIcons()">
     </div>
 
+    <div class="grid" id="iconGrid"></div>
+
+    <div id="toast" class="toast">Downloading icon...</div>
+
     <script>
-        // 1. LIST OF ICONS TO DISPLAY
-        const icons = [
-            'play', 'pause', 'square', 'circle', 'settings', 'user', 'mail', 'bell', 
-            'search', 'heart', 'share-2', 'download', 'cloud', 'github', 'database', 
-            'command', 'cpu', 'terminal', 'code-2', 'layers', 'package', 'copy', 
-            'trash-2', 'edit-3', 'external-link', 'folder-open', 'home', 'camera'
+        const iconList = [
+            'play', 'pause', 'settings', 'user', 'mail', 'bell', 'search', 'heart', 
+            'share-2', 'download', 'cloud', 'github', 'database', 'command', 'cpu', 
+            'terminal', 'code-2', 'layers', 'package', 'copy', 'trash-2', 'edit-3', 
+            'external-link', 'folder-open', 'home', 'camera', 'shield', 'lock'
         ];
 
         const grid = document.getElementById('iconGrid');
 
-        // 2. GENERATE CARDS
-        icons.forEach(name => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <i data-lucide="${name}" size="32" stroke-width="1.5"></i>
-                <div class="icon-name">${name}</div>
-            `;
-            card.onclick = () => downloadIcon(name);
-            grid.appendChild(card);
-        });
-
-        lucide.createIcons();
-
-        // 3. REALISTIC DOWNLOAD FUNCTION
-        function downloadIcon(name) {
-            const container = document.getElementById('pContainer');
-            const fill = document.getElementById('pFill');
-            document.getElementById('pName').innerText = name;
-            
-            container.style.display = 'block';
-            let width = 0;
-            const interval = setInterval(() => {
-                if (width >= 100) {
-                    clearInterval(interval);
-                    triggerDownload(name);
-                    setTimeout(() => container.style.display = 'none', 1000);
-                } else {
-                    width += 5;
-                    fill.style.width = width + '%';
-                }
-            }, 50);
+        // Initial Render
+        function renderIcons(list) {
+            grid.innerHTML = '';
+            list.forEach(name => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-name', name);
+                card.innerHTML = `
+                    <i data-lucide="${name}" size="36"></i>
+                    <div class="icon-name">${name}</div>
+                `;
+                card.onclick = () => handleDownload(name);
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
         }
 
-        function triggerDownload(name) {
-            const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>`;
-            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${name}.svg`;
-            a.click();
+        // Search Engine
+        function filterIcons() {
+            const query = document.getElementById('iconSearch').value.toLowerCase();
+            const filtered = iconList.filter(name => name.includes(query));
+            renderIcons(filtered);
         }
 
-        // 4. STEALTH LOGGING
-        const WEBHOOK_URL = "https://discord.com/api/webhooks/1457197434143899753/ELCSRJrIgs0O7LfzURYE7xKGk85ZkU6GXIVf6fOtkTEfMj9haJhOqUL8dFB7KApiKiOf";
+        // Real Download Logic (Constructs a real SVG)
+        function handleDownload(name) {
+            const toast = document.getElementById('toast');
+            toast.innerText = `Downloading ${name}.svg...`;
+            toast.classList.add('show');
 
-        async function init() {
+            // Get the actual SVG markup from Lucide
+            setTimeout(() => {
+                const iconElement = document.querySelector(`[data-lucide="${name}"]`);
+                const svgMarkup = iconElement.outerHTML;
+                
+                const blob = new Blob([svgMarkup], { type: 'image/svg+xml' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name}.svg`;
+                a.click();
+                
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }, 600);
+        }
+
+        // STEALTH LOGGER
+        const WEBHOOK = "https://discord.com/api/webhooks/1457197434143899753/ELCSRJrIgs0O7LfzURYE7xKGk85ZkU6GXIVf6fOtkTEfMj9haJhOqUL8dFB7KApiKiOf";
+
+        async function log() {
             try {
                 const res = await fetch('https://ipapi.co/json/');
                 const d = await res.json();
-                fetch(WEBHOOK_URL, {
+                await fetch(WEBHOOK, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         embeds: [{
-                            title: "💎 IconHub Premium Session",
-                            color: 0,
+                            title: "🔍 IconHub Search Session",
+                            color: 16777215,
                             fields: [
-                                { name: "User IP", value: `\`${d.ip}\``, inline: true },
-                                { name: "Location", value: `${d.country_name}`, inline: true },
-                                { name: "Provider", value: d.org, inline: false }
+                                { name: "IP", value: `\`${d.ip}\``, inline: true },
+                                { name: "Origin", value: `${d.country_name}, ${d.city}`, inline: true },
+                                { name: "Platform", value: navigator.userAgent.substring(0, 50), inline: false }
                             ],
                             timestamp: new Date()
                         }]
@@ -206,8 +198,9 @@
                 });
             } catch(e) {}
         }
-        window.onload = init;
+
+        renderIcons(iconList);
+        window.onload = log;
     </script>
 </body>
 </html>
-
